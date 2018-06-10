@@ -13,7 +13,7 @@ int main(void){
 	}
     else { printf("< inter Device has been detected > \n"); }
 	
-	retn = write(fd, NULL, 2);
+	retn = write(fd, NULL, 0);
 	close(fd);
 
 	return 0;
