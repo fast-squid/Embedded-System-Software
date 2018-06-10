@@ -36,6 +36,7 @@ static void killer_function(unsigned long);
 static int pause;
 static int kill;
 static u32 exit_down;
+static int first;
 
 static int inter_major=0, inter_minor=0;
 static int result;
@@ -140,7 +141,15 @@ static void killer_function(unsigned long timeout){
 
 
 irqreturn_t inter_handler4(int irq, void* dev_id, struct pt_regs* reg) {
+    int gpio = __gpio_get_value(IMX_GPIO_NR(5,14));
     printk("exit\n");
+    printk("%d",gpio);
+    printk("%d",first);
+    if(!first && gpio){
+        printk("aa");
+        first++;
+        return 0;
+    }
     u32 now = get_jiffies_64();
     if(!exit_down){
         exit_down=get_jiffies_64();
@@ -154,7 +163,7 @@ irqreturn_t inter_handler4(int irq, void* dev_id, struct pt_regs* reg) {
         exit_down = 0;
         del_timer(&killer);
     }
-
+    first++;
     return IRQ_HANDLED;
 }
 
@@ -206,6 +215,7 @@ static int inter_write(struct file *filp, const char *buf, size_t count, loff_t 
     pause = 1;
     kill = 0;
     exit_down = 0;
+    first = 0;
     if(interruptCount==0){
         printk("sleep on\n");
         interruptible_sleep_on(&wq_write);
